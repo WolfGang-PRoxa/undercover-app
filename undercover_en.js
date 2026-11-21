@@ -21,9 +21,9 @@ const LISTS_FOLDER  = "lists";
 const FILE_PLAYERS  = "players.json";
 const FILE_CONFIG   = "config.json";
 const LOGS_FOLDER   = "logs";
-const APP_VERSION   = "1.1";
+const APP_VERSION   = "1.2";
 const LANG          = "en";
-const REPO_RAW_URL  = "https://raw.githubusercontent.com/WolfGang-PRoxa/undercover-scriptable/main";
+const REPO_RAW_URL  = "https://raw.githubusercontent.com/WolfGang-PRoxa/undercover-app/main";
 const EMBEDDED_KEY  = "__embedded";
 
 // Built-in list: copy of lists/default_en.json, used offline or when the active list cannot be found.

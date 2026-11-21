@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.2] - 2026-11-21
+
+### Corrigé
+- URL du dépôt mise à jour (ancien nom undercover-scriptable).
+
 ## [1.1] - 2026-10-24
 
 ### Corrigé
