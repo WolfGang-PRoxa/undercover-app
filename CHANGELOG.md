@@ -6,9 +6,16 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+
+- MIT license.
+- English README with a French translation (`README.fr.md`), and French changelog (`CHANGELOG.fr.md`).
+- Prettier and ESLint (`npm run check`), automated tests with a fake Scriptable environment (`npm test`) and a CI workflow on every push.
+
 ### Changed
 
 - Version in `X.Y.Z` format (`APP_VERSION = "1.2.0"`).
+- Code formatted with Prettier.
 
 ## [1.2.0] - 2026-11-21
 

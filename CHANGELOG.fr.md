@@ -6,9 +6,16 @@ Toutes les évolutions notables du projet sont consignées ici. Le format suit [
 
 ## [Unreleased]
 
+### Ajouts
+
+- Licence MIT.
+- README en anglais avec sa traduction française (`README.fr.md`), et changelog français (`CHANGELOG.fr.md`).
+- Prettier et ESLint (`npm run check`), tests automatisés avec un faux environnement Scriptable (`npm test`) et un workflow de CI à chaque push.
+
 ### Améliorations
 
 - Version au format `X.Y.Z` (`APP_VERSION = "1.2.0"`).
+- Code mis en forme avec Prettier.
 
 ## [1.2.0] - 2026-11-21
 
