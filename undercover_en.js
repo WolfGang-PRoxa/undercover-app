@@ -451,7 +451,7 @@ function getGameLogs() {
 // ─────────────────────────────────────────────
 
 function normalizePhone(phone) {
-  let p = String(phone).replace(/[\s\-\.\(\)]/g, '');
+  let p = String(phone).replace(/[\s\-.()]/g, '');
   if (p.startsWith('0') && p.length === 10) p = '+33' + p.slice(1);
   return p;
 }
@@ -495,7 +495,7 @@ async function loadAllContactsWithPhone() {
 // ─────────────────────────────────────────────
 
 async function startApp() {
-  return new Promise(async (resolve) => {
+  return new Promise((resolve) => {
     let table = new UITable();
     table.showSeparators = true;
 
@@ -1258,8 +1258,7 @@ async function startApp() {
     }
 
     render();
-    await table.present(false);
-    resolve('quit');
+    table.present(false).then(() => resolve('quit'));
   });
 }
 
@@ -1509,7 +1508,6 @@ async function showEndGameSummary() {
   let title = '🎉 GAME OVER';
   let msg = '';
   let winnerType = appState.game.winnerType;
-  let mrWhiteAssign = appState.game.mrWhiteAssign;
 
   if (winnerType === 'civils') {
     msg = 'The Civilians won! All imposters are eliminated.\n(+2 pts per Civilian)';

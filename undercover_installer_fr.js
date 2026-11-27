@@ -15,27 +15,26 @@ if (req.response.statusCode !== 200) {
   errAlert.message = "Impossible de télécharger le script. Vérifiez votre connexion ou l'URL.";
   errAlert.addAction('OK');
   await errAlert.presentAlert();
-  return;
-}
+} else {
+  // Détection de l'emplacement de sauvegarde (iCloud ou Local)
+  let fm = FileManager.iCloud();
+  try {
+    fm.documentsDirectory();
+  } catch (e) {
+    fm = FileManager.local();
+  }
 
-// Détection de l'emplacement de sauvegarde (iCloud ou Local)
-let fm = FileManager.iCloud();
-try {
-  fm.documentsDirectory();
-} catch (e) {
-  fm = FileManager.local();
-}
+  let path = fm.joinPath(fm.documentsDirectory(), scriptName + '.js');
+  fm.writeString(path, scriptCode);
 
-let path = fm.joinPath(fm.documentsDirectory(), scriptName + '.js');
-fm.writeString(path, scriptCode);
+  let alert = new Alert();
+  alert.title = 'Installation réussie 🎉';
+  alert.message = "La dernière version de '" + scriptName + "' a été téléchargée et installée avec succès.";
+  alert.addAction('Lancer le jeu');
+  alert.addCancelAction('Fermer');
+  let response = await alert.presentAlert();
 
-let alert = new Alert();
-alert.title = 'Installation réussie 🎉';
-alert.message = "La dernière version de '" + scriptName + "' a été téléchargée et installée avec succès.";
-alert.addAction('Lancer le jeu');
-alert.addCancelAction('Fermer');
-let response = await alert.presentAlert();
-
-if (response === 0) {
-  Safari.open('scriptable:///run?scriptName=' + encodeURIComponent(scriptName));
+  if (response === 0) {
+    Safari.open('scriptable:///run?scriptName=' + encodeURIComponent(scriptName));
+  }
 }
