@@ -17,7 +17,7 @@ The game exists in English (`undercover_en.js`) and in French (`undercover_fr.js
 
 1. Install [Scriptable](https://apps.apple.com/app/scriptable/id1405459188) on your iPhone or iPad.
 2. In Scriptable, create a new script, name it `Installer Undercover` and paste the content of [`undercover_installer_en.js`](undercover_installer_en.js) (or [`undercover_installer_fr.js`](undercover_installer_fr.js) for the French version).
-3. Run it: it downloads the game from the `main` branch of this repository, saves it as the `Undercover_en` script (`Undercover_fr` in French) and offers to launch it.
+3. Run it: it downloads the game from the `main` branch of this repository, saves it as the `Undercover_en` script (`Undercover` in French) and offers to launch it.
 
 On first launch, the game creates its data folder and downloads the official word lists.
 

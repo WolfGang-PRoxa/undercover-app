@@ -17,7 +17,7 @@ Le jeu existe en anglais (`undercover_en.js`) et en français (`undercover_fr.js
 
 1. Installez [Scriptable](https://apps.apple.com/app/scriptable/id1405459188) sur votre iPhone ou iPad.
 2. Dans Scriptable, créez un nouveau script, nommez-le `Installer Undercover` et collez-y le contenu de [`undercover_installer_fr.js`](undercover_installer_fr.js) (ou de [`undercover_installer_en.js`](undercover_installer_en.js) pour la version anglaise).
-3. Lancez-le : il télécharge le jeu depuis la branche `main` de ce dépôt, l'enregistre sous le nom `Undercover_fr` (`Undercover_en` en anglais) et propose de le lancer.
+3. Lancez-le : il télécharge le jeu depuis la branche `main` de ce dépôt, l'enregistre sous le nom `Undercover` (`Undercover_en` en anglais) et propose de le lancer.
 
 Au premier lancement, le jeu crée son dossier de données et télécharge les listes de mots officielles.
 
