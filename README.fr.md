@@ -24,19 +24,19 @@ Au premier lancement, le jeu crée son dossier de données et télécharge les l
 ## Mise à jour
 
 - **Jeu** : relancez `Installer Undercover`. Il télécharge la dernière version et remplace le script.
-- **Listes de mots** : dans le jeu, *Configuration avancée > Changer de liste de mots > Mettre à jour les listes officielles*.
+- **Listes de mots** : dans le jeu, _Configuration avancée > Changer de liste de mots > Mettre à jour les listes officielles_.
 
 ## Emplacement des données
 
-Les données sont enregistrées dans `Scriptable/Undercover/`, sur **iCloud Drive** quand il est disponible (synchronisé entre vos appareils), sinon *Sur mon iPhone*. Vous pouvez les ouvrir depuis l'app Fichiers.
+Les données sont enregistrées dans `Scriptable/Undercover/`, sur **iCloud Drive** quand il est disponible (synchronisé entre vos appareils), sinon _Sur mon iPhone_. Vous pouvez les ouvrir depuis l'app Fichiers.
 
-| Chemin | Contenu |
-| --- | --- |
-| `players.json` | Profils des joueurs, scores cumulés et statistiques par rôle (`played`, `won`, `lost`) |
-| `config.json` | Mode Debug et réglages de session (rôle ou pseudo dans les SMS, liste de mots active) |
-| `lists/` | Listes officielles téléchargées depuis le dépôt et vos propres listes |
-| `lists/*__used_words.json` | Groupes de mots déjà joués avec chaque liste |
-| `logs/` | Un journal texte par partie, également consultable dans l'écran *Historique des parties* |
+| Chemin                     | Contenu                                                                                  |
+| -------------------------- | ---------------------------------------------------------------------------------------- |
+| `players.json`             | Profils des joueurs, scores cumulés et statistiques par rôle (`played`, `won`, `lost`)   |
+| `config.json`              | Mode Debug et réglages de session (rôle ou pseudo dans les SMS, liste de mots active)    |
+| `lists/`                   | Listes officielles téléchargées depuis le dépôt et vos propres listes                    |
+| `lists/*__used_words.json` | Groupes de mots déjà joués avec chaque liste                                             |
+| `logs/`                    | Un journal texte par partie, également consultable dans l'écran _Historique des parties_ |
 
 ### Listes de mots
 
@@ -51,16 +51,16 @@ Les listes de mots sont des fichiers JSON composés de groupes de 4 à 5 mots pr
 
 L'ancien format par paire (`[{ "civil": "...", "undercover": "..." }]`) est toujours pris en charge.
 
-À chaque partie, un groupe **jamais joué** avec la liste active est tiré au sort : deux de ses mots deviennent le mot des Civils et celui des Infiltrés, et le groupe entier est marqué comme utilisé. Quand tous les groupes ont été joués, le jeu propose de réinitialiser la liste (également possible via *Configuration avancée > Réinitialiser les mots utilisés*).
+À chaque partie, un groupe **jamais joué** avec la liste active est tiré au sort : deux de ses mots deviennent le mot des Civils et celui des Infiltrés, et le groupe entier est marqué comme utilisé. Quand tous les groupes ont été joués, le jeu propose de réinitialiser la liste (également possible via _Configuration avancée > Réinitialiser les mots utilisés_).
 
 Les listes officielles sont dans le dossier [`lists/`](lists) et référencées dans [`lists/index.json`](lists/index.json) :
 
-| Fichier | Contenu |
-| --- | --- |
-| `default_en.json` / `default_fr.json` | Liste par défaut (50 groupes), également embarquée dans le script |
-| `pop_culture_en.json` / `culture_pop_fr.json` | Culture pop : films, séries, jeux vidéo, marques... (64 groupes) |
+| Fichier                                       | Contenu                                                           |
+| --------------------------------------------- | ----------------------------------------------------------------- |
+| `default_en.json` / `default_fr.json`         | Liste par défaut (50 groupes), également embarquée dans le script |
+| `pop_culture_en.json` / `culture_pop_fr.json` | Culture pop : films, séries, jeux vidéo, marques... (64 groupes)  |
 
-Pour utiliser votre propre liste, déposez un fichier `.json` dans `Scriptable/Undercover/lists/` puis sélectionnez-la dans *Configuration avancée > Changer de liste de mots*. Pour publier une nouvelle liste officielle, ajoutez le fichier dans `lists/` et son nom dans `lists/index.json`.
+Pour utiliser votre propre liste, déposez un fichier `.json` dans `Scriptable/Undercover/lists/` puis sélectionnez-la dans _Configuration avancée > Changer de liste de mots_. Pour publier une nouvelle liste officielle, ajoutez le fichier dans `lists/` et son nom dans `lists/index.json`.
 
 ## Fonctionnement
 

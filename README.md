@@ -24,19 +24,19 @@ On first launch, the game creates its data folder and downloads the official wor
 ## Updating
 
 - **Game**: run `Installer Undercover` again. It downloads the latest version and replaces the script.
-- **Word lists**: in the game, *Advanced settings > Change word list > Update official lists*.
+- **Word lists**: in the game, _Advanced settings > Change word list > Update official lists_.
 
 ## Data location
 
-Data is stored in `Scriptable/Undercover/`, on **iCloud Drive** when available (synchronized between your devices), otherwise *On My iPhone*. You can open it from the Files app.
+Data is stored in `Scriptable/Undercover/`, on **iCloud Drive** when available (synchronized between your devices), otherwise _On My iPhone_. You can open it from the Files app.
 
-| Path | Content |
-| --- | --- |
-| `players.json` | Player profiles, cumulative scores and per-role statistics (`played`, `won`, `lost`) |
-| `config.json` | Debug mode and session settings (role or nickname in SMS, active word list) |
-| `lists/` | Official lists downloaded from the repository and your own lists |
-| `lists/*__used_words.json` | Word groups already played with each list |
-| `logs/` | One text log per game, also available in the *Game history* screen |
+| Path                       | Content                                                                              |
+| -------------------------- | ------------------------------------------------------------------------------------ |
+| `players.json`             | Player profiles, cumulative scores and per-role statistics (`played`, `won`, `lost`) |
+| `config.json`              | Debug mode and session settings (role or nickname in SMS, active word list)          |
+| `lists/`                   | Official lists downloaded from the repository and your own lists                     |
+| `lists/*__used_words.json` | Word groups already played with each list                                            |
+| `logs/`                    | One text log per game, also available in the _Game history_ screen                   |
 
 ### Word lists
 
@@ -51,16 +51,16 @@ Word lists are JSON files made of groups of 4 to 5 related words:
 
 The legacy pair format (`[{ "civil": "...", "undercover": "..." }]`) is still supported.
 
-At each game, a group that has **never been played** with the active list is drawn at random: two of its words become the Civilians' and the Undercovers' words, and the whole group is marked as used. When every group has been played, the game offers to reset the list (also available in *Advanced settings > Reset used words*).
+At each game, a group that has **never been played** with the active list is drawn at random: two of its words become the Civilians' and the Undercovers' words, and the whole group is marked as used. When every group has been played, the game offers to reset the list (also available in _Advanced settings > Reset used words_).
 
 Official lists live in the [`lists/`](lists) folder and are referenced in [`lists/index.json`](lists/index.json):
 
-| File | Content |
-| --- | --- |
-| `default_en.json` / `default_fr.json` | Default list (50 groups), also embedded in the script |
+| File                                          | Content                                                         |
+| --------------------------------------------- | --------------------------------------------------------------- |
+| `default_en.json` / `default_fr.json`         | Default list (50 groups), also embedded in the script           |
 | `pop_culture_en.json` / `culture_pop_fr.json` | Pop culture: movies, series, video games, brands... (64 groups) |
 
-To use your own list, drop a `.json` file in `Scriptable/Undercover/lists/` and select it in *Advanced settings > Change word list*. To publish a new official list, add the file to `lists/` and its name to `lists/index.json`.
+To use your own list, drop a `.json` file in `Scriptable/Undercover/lists/` and select it in _Advanced settings > Change word list_. To publish a new official list, add the file to `lists/` and its name to `lists/index.json`.
 
 ## How it works
 

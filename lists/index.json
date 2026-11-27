@@ -1,10 +1,4 @@
 {
-  "fr": [
-    "default_fr",
-    "culture_pop_fr"
-  ],
-  "en": [
-    "default_en",
-    "pop_culture_en"
-  ]
+  "fr": ["default_fr", "culture_pop_fr"],
+  "en": ["default_en", "pop_culture_en"]
 }
