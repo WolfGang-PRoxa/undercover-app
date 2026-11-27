@@ -1,197 +1,92 @@
-# Undercover (Scriptable) - Technical Documentation
+# Undercover
 
-[English](#english) | [Français](#francais)
+[Français](README.fr.md)
 
----
+Undercover is a party game for the iOS **[Scriptable](https://scriptable.app)** app. Everyone gets a secret word: the Civilians share the same word, the Undercovers get a close but different one, and Mr. White gets no word at all. Players describe their word in turn, then vote to eliminate whoever they suspect. The script handles the whole game for you:
 
-## <a name="english"></a> English
+- drawing a group of related words and assigning the roles (Civilian, Undercover, Mr. White);
+- handing out the words on screen (pass the phone around) or by SMS;
+- speaking order, eliminations, Mr. White's last guess and victory conditions;
+- a player leaderboard with points and per-role statistics;
+- downloadable word lists, plus your own lists;
+- a text log of every game.
 
-This documentation details the architecture, state management, and game mechanics of the `undercover.js` (and `undercover_en.js`) script, designed to run within the iOS **Scriptable** app.
+The game exists in English (`undercover_en.js`) and in French (`undercover_fr.js`).
 
-### 1. Overall Architecture (Single Page Application)
+## Installation
 
-The script is designed as a **Single Page Application (SPA)** running inside a single native Scriptable `UITable` interface. Instead of continuously opening and closing views, the script dynamically updates the table rows via a recursive `render()` function.
+1. Install [Scriptable](https://apps.apple.com/app/scriptable/id1405459188) on your iPhone or iPad.
+2. In Scriptable, create a new script, name it `Installer Undercover` and paste the content of [`undercover_installer_en.js`](undercover_installer_en.js) (or [`undercover_installer_fr.js`](undercover_installer_fr.js) for the French version).
+3. Run it: it downloads the game from the `main` branch of this repository, saves it as the `Undercover_en` script (`Undercover_fr` in French) and offers to launch it.
 
-#### 1.1. The Event Loop (`main()`)
+On first launch, the game creates its data folder and downloads the official word lists.
 
-The entire script relies on an infinite asynchronous `while(true)` loop executed at launch.
-The `startApp()` function creates the interface and returns a `Promise` that remains `pending`. When the user performs a major action (like starting the game or quitting), the `Promise` is resolved (`resolve("action")`), which tells the main loop to trigger the appropriate action, and then restart `startApp()`.
+## Updating
 
-#### 1.2. Render Engine (`render()`)
+- **Game**: run `Installer Undercover` again. It downloads the latest version and replaces the script.
+- **Word lists**: in the game, *Advanced settings > Change word list > Update official lists*.
 
-The `render()` function completely clears the table (`table.removeAllRows()`) and rebuilds the interface based on the value of `appState.view`. This approach allows for smooth transitions between different "pages" (Main Menu, Leaderboard, Game in Progress, Rules, etc.). The main menu also dynamically displays the current script version (e.g., `Scriptable Edition - v1.0`).
+## Data location
 
-### 2. State Management (`appState` & `sessionConfig`)
+Data is stored in `Scriptable/Undercover/`, on **iCloud Drive** when available (synchronized between your devices), otherwise *On My iPhone*. You can open it from the Files app.
 
-The application state is maintained in two distinct objects.
+| Path | Content |
+| --- | --- |
+| `players.json` | Player profiles, cumulative scores and per-role statistics (`played`, `won`, `lost`) |
+| `config.json` | Debug mode and session settings (role or nickname in SMS, active word list) |
+| `lists/` | Official lists downloaded from the repository and your own lists |
+| `lists/*__used_words.json` | Word groups already played with each list |
+| `logs/` | One text log per game, also available in the *Game history* screen |
 
-#### 2.1. `sessionConfig` (Persistent)
-Manages global preferences that apply from one session to the next:
-- `showRoleInMessage` / `showPseudoInMessage`: Allows including or excluding explicit information in the SMS distributed to players.
-- `activeListName`: Determines the JSON word list currently used (or `null` for the built-in list, which embeds the full default list).
+### Word lists
 
-#### 2.2. `appState` (Volatile & Partially Persistent)
-Contains the dynamic state of the application:
-- `view`: The current view displayed by the `render()` function (e.g., `"main"`, `"playing"`, `"stats"`).
-- `prevView`: Keeps the previous view for the "Back" button.
-- `players`: Array of objects representing the players (Name, Phone, Nickname, Score, and Role Statistics). **This array is persisted on iCloud/Local**.
-- `game`: The state of an ongoing game. It is reset at each game launch via `launchGame()`.
-  - `status`: `"playing"` or `"ended"`.
-  - `alive`, `turnOrder`, `assignments`: Dynamic information about roles and deaths.
+Word lists are JSON files made of groups of 4 to 5 related words:
 
-### 3. Storage and Saving (`FileManager`)
-
-Data is persisted in JSON via the `FileManager` (on **iCloud** by default for cross-device synchronization, otherwise **Local**).
-Saved data includes:
-- `players.json`: Player profiles, cumulative scores (2 points per Civilian win, etc.), and stats (`played`, `won`, `lost` by role).
-- `config.json`: Debug mode state and session configuration (`sessionConfig`).
-- `lists/` folder: Contains the official lists downloaded from the repository and any list added by the user.
-- `lists/*__used_words.json`: Keeps track of the word groups already played in a list (see 4.1).
-- `logs/` folder: One text log per game (see 6).
-
-### 4. Game Logic
-
-#### 4.1. Launch (`launchGame()`)
-When a game is launched:
-1. The script determines the number of Undercovers (automatic calculation via 25% rounded up, or manual) and Mr. White.
-2. A group of 4-5 words is drawn at random (`pickPair()`) among the groups **never played** with this list (the whitelist). Two of its words become the Civilians' and the Undercovers' words, and the whole group is marked as used: no pair from this group can come out again.
-3. When the whitelist is empty, the game announces that every word has been used and offers to reset it (also available in *Advanced settings > Reset used words*).
-4. `assignRoles()` draws the roles uniformly and shuffles the distribution order; `buildTurnOrder()` makes sure Mr. White never speaks first.
-5. Distribution is done either on screen (`showOnScreen`: the game first announces who to hand the phone to and waits for that player's confirmation before showing their word) or by sending SMS (`sendInitialSMS`).
-
-#### 4.2. Eliminations (`executeElimination(phone)`)
-Executed when a player is eliminated from the interface:
-1. Removal of the player from the `appState.game.alive` list.
-2. If the player is **Mr. White**, a special prompt opens: did he guess the Civilians' word? If he answers "Yes", immediate victory is granted to him.
-3. The script recounts the remaining players:
-   - No more Undercovers/Mr. White = **Civilians Victory**.
-   - Only 1 Civilian remaining = **Undercovers/Mr. White Victory**.
-4. If the game continues, an SMS notification of the elimination is prepared to inform the dead person of their role, and inform the survivors via a group message.
-
-#### 4.3. Game Over (`computeEndGameStats()`)
-If a victory condition is met:
-1. The status changes to `status: "ended"`. The interface does not close but reveals all roles live.
-2. The statistics (Wins/Losses) of each role are incremented for each player in the game.
-3. Global victory points are distributed (`+2` Civilians, `+10` Undercover, `+6` Mr. White).
-4. `savePlayers()` saves the database asynchronously.
-
-### 5. Customization (External Words)
-
-Word lists are JSON files made of groups of 4-5 related words:
 ```json
 [
-  [ "Word A", "Word B", "Word C", "Word D" ],
-  [ "Dog", "Cat", "Wolf", "Fox" ]
+  ["Word A", "Word B", "Word C", "Word D"],
+  ["Dog", "Cat", "Wolf", "Fox"]
 ]
 ```
+
 The legacy pair format (`[{ "civil": "...", "undercover": "..." }]`) is still supported.
 
-Official lists live in the repository's `lists/` folder and are referenced in `lists/index.json`. They are downloaded on first launch and with *Advanced settings > Change word list > Update official lists*:
+At each game, a group that has **never been played** with the active list is drawn at random: two of its words become the Civilians' and the Undercovers' words, and the whole group is marked as used. When every group has been played, the game offers to reset the list (also available in *Advanced settings > Reset used words*).
+
+Official lists live in the [`lists/`](lists) folder and are referenced in [`lists/index.json`](lists/index.json):
 
 | File | Content |
 | --- | --- |
-| `default_en.json` | Default list (50 groups), also embedded in the script |
-| `pop_culture_en.json` | Pop culture: movies, series, video games, brands... (64 groups) |
+| `default_en.json` / `default_fr.json` | Default list (50 groups), also embedded in the script |
+| `pop_culture_en.json` / `culture_pop_fr.json` | Pop culture: movies, series, video games, brands... (64 groups) |
 
-To import your own list, drop a `.json` file in `Scriptable/Undercover/lists/` (Files app) and select it in *Change word list*. To publish a new official list, add the file to `lists/` and its name to `lists/index.json`.
+To use your own list, drop a `.json` file in `Scriptable/Undercover/lists/` and select it in *Advanced settings > Change word list*. To publish a new official list, add the file to `lists/` and its name to `lists/index.json`.
 
-### 6. Game logs
+## How it works
 
-Each game writes a text log in `Scriptable/Undercover/logs/` (Files app > iCloud Drive > Scriptable > Undercover > logs, or *On My iPhone* without iCloud): drawn list and words, roles, speaking order of every round, eliminations, Mr. White's guess, result and points. Abandoned or interrupted games are logged too. The *Game history* screen lists, opens and clears these logs.
+Each script is a single-page application inside one Scriptable `UITable`:
 
----
+- `main()` runs an endless loop around `startApp()`, which shows the interface and resolves a `Promise` when the user launches a game or quits.
+- `render()` clears the table and rebuilds the current view (`appState.view`: main menu, leaderboard, game in progress, rules...).
+- `sessionConfig` holds the persistent preferences; `appState` holds the players (saved in `players.json`) and the current game.
+- `launchGame()` computes the number of Undercovers (25% of the players rounded up, or a manual value) and Mr. White, draws a group with `pickPair()`, assigns the roles with `assignRoles()` and builds the speaking order with `buildTurnOrder()` (Mr. White never speaks first).
+- `executeElimination()` removes a player, lets Mr. White guess the Civilians' word and checks the victory conditions: no Undercover or Mr. White left means the Civilians win; only one Civilian left means the Undercovers and Mr. White win.
+- `computeEndGameStats()` updates the statistics and awards points to the winners: `+2` per Civilian, `+10` per Undercover, `+6` for Mr. White.
 
-## <a name="francais"></a> Français
+## Development
 
-Cette documentation détaille l'architecture, la gestion de l'état et les mécaniques de jeu du script `undercover.js`, conçu pour fonctionner dans l'application iOS **Scriptable**.
+The scripts run in Scriptable; Node.js (version 22) is only used for development tools.
 
-### 1. Architecture Globale (Single Page Application)
-
-Le script est conçu comme une **Single Page Application (SPA)** fonctionnant à l'intérieur d'une unique interface `UITable` native à Scriptable. Au lieu d'ouvrir et de fermer continuellement des vues, le script actualise dynamiquement les lignes du tableau via une fonction `render()` récursive.
-
-#### 1.1. La boucle d'événements (`main()`)
-
-Tout le script repose sur une boucle asynchrone infinie `while(true)` exécutée au lancement.
-La fonction `startApp()` crée l'interface et retourne une `Promise` qui reste "en attente" (`pending`). Lorsque l'utilisateur effectue une action majeure (comme lancer la partie, ou quitter), la `Promise` est résolue (`resolve("action")`), ce qui indique à la boucle principale de déclencher l'action appropriée, puis de relancer `startApp()`.
-
-#### 1.2. Moteur de Rendu (`render()`)
-
-La fonction `render()` vide entièrement le tableau (`table.removeAllRows()`) et reconstruit l'interface en fonction de la valeur de `appState.view`. Cette approche permet des transitions fluides entre les différentes "pages" (Menu Principal, Classement, Jeu en cours, Règles, etc.).
-
-### 2. Gestion de l'État (`appState` & `sessionConfig`)
-
-L'état de l'application est maintenu dans deux objets distincts.
-
-#### 2.1. `sessionConfig` (Persistant)
-Gère les préférences globales qui s'appliquent d'une session à l'autre :
-- `showRoleInMessage` / `showPseudoInMessage` : Permet d'inclure ou non des informations explicites dans les SMS distribués aux joueurs.
-- `activeListName` : Détermine la liste de mots JSON actuellement utilisée (ou `null` pour la liste embarquée, qui contient la liste par défaut complète).
-
-#### 2.2. `appState` (Volatil & Persistant partiel)
-Contient l'état dynamique de l'application :
-- `view` : La vue actuelle affichée par la fonction `render()` (ex: `"main"`, `"playing"`, `"stats"`).
-- `prevView` : Conserve la vue précédente pour le bouton "Retour".
-- `players` : Tableau d'objets représentant les joueurs (Nom, Téléphone, Pseudo, Score, et Statistiques par Rôle). **Ce tableau est persisté sur iCloud/Local**.
-- `game` : L'état d'une partie en cours. Il est réinitialisé à chaque lancement de partie via `launchGame()`.
-  - `status`: `"playing"` ou `"ended"`.
-  - `alive`, `turnOrder`, `assignments` : Informations dynamiques sur les rôles et les morts.
-
-### 3. Stockage et Sauvegarde (`FileManager`)
-
-Les données sont persistées en JSON via le `FileManager` (sur **iCloud** par défaut pour la synchronisation inter-appareils, sinon en **Local**).
-Les données sauvegardées incluent :
-- `players.json` : Profils des joueurs, scores cumulés (2 points par victoire Civil, etc.) et statistiques (`played`, `won`, `lost` par rôle).
-- `config.json` : État du mode Debug et configuration de session (`sessionConfig`).
-- Dossier `lists/` : Contient les listes officielles téléchargées depuis le dépôt et les listes ajoutées par l'utilisateur.
-- `lists/*__used_words.json` : Garde une trace des groupes de mots déjà joués dans une liste (voir 4.1).
-- Dossier `logs/` : Un journal texte par partie (voir 6).
-
-### 4. Logique du Jeu
-
-#### 4.1. Lancement (`launchGame()`)
-Lorsqu'une partie est lancée :
-1. Le script détermine le nombre d'infiltrés (calcul automatique via 25% arrondi au supérieur, ou manuel) et de Mister White.
-2. Un groupe de 4-5 mots est tiré au sort (`pickPair()`) parmi les groupes **jamais joués** avec cette liste (la liste blanche). Deux de ses mots deviennent le mot des Civils et celui des Infiltrés, et le groupe entier est marqué comme utilisé : aucun couple de ce groupe ne peut ressortir.
-3. Quand la liste blanche est vide, le jeu annonce que tous les mots ont été utilisés et propose de la réinitialiser (également possible via *Configuration avancée > Réinitialiser les mots utilisés*).
-4. `assignRoles()` tire les rôles uniformément et mélange l'ordre de distribution ; `buildTurnOrder()` garantit que Mister White ne parle jamais en premier.
-5. La distribution se fait soit à l'écran (`showOnScreen` : le jeu annonce d'abord à qui passer le téléphone et attend la confirmation de ce joueur avant d'afficher son mot), soit par SMS (`sendInitialSMS`).
-
-#### 4.2. Éliminations (`executeElimination(phone)`)
-Exécutée lorsqu'un joueur est éliminé depuis l'interface :
-1. Retrait du joueur de la liste `appState.game.alive`.
-2. Si le joueur est **Mister White**, un prompt spécial s'ouvre : a-t-il deviné le mot des Civils ? S'il répond "Oui", la victoire immédiate lui est accordée.
-3. Le script recompte les joueurs restants :
-   - Plus aucun Infiltré/Mr White = **Victoire Civils**.
-   - 1 seul Civil restant = **Victoire Infiltrés/Mr White**.
-4. Si la partie continue, une notification SMS de l'élimination est préparée pour informer le mort de son rôle, et informer les survivants via un message de groupe.
-
-#### 4.3. Fin de Partie (`computeEndGameStats()`)
-Si une condition de victoire est remplie :
-1. Le statut passe à `status: "ended"`. L'interface ne se ferme pas, mais révèle tous les rôles en direct.
-2. Les statistiques (Victoires/Défaites) de chaque rôle sont incrémentées pour chaque joueur de la partie.
-3. Les points de victoire globale sont distribués (`+2` Civils, `+10` Infiltré, `+6` Mr White).
-4. `savePlayers()` enregistre la base de données de manière asynchrone.
-
-### 5. Personnalisation (Mots externes)
-
-Les listes de mots sont des fichiers JSON composés de groupes de 4-5 mots proches :
-```json
-[
-  [ "Mot A", "Mot B", "Mot C", "Mot D" ],
-  [ "Chien", "Chat", "Loup", "Renard" ]
-]
+```sh
+npm install      # install the development tools
+npm test         # run the tests (fake Scriptable environment in tests/)
+npm run format   # format the code with Prettier
+npm run lint     # check the code with ESLint
+npm run check    # Prettier check + ESLint, as in CI
 ```
-L'ancien format par paire (`[{ "civil": "...", "undercover": "..." }]`) est toujours pris en charge.
 
-Les listes officielles sont dans le dossier `lists/` du dépôt et référencées dans `lists/index.json`. Elles sont téléchargées au premier lancement et via *Configuration avancée > Changer de liste de mots > Mettre à jour les listes officielles* :
+Work happens on the `dev` branch. The installers read `main`, so only tested versions are merged into it. The version is the `APP_VERSION` constant at the top of each script (`X.Y.Z` format) and changes are listed in [CHANGELOG.md](CHANGELOG.md).
 
-| Fichier | Contenu |
-| --- | --- |
-| `default_fr.json` | Liste par défaut (50 groupes), également embarquée dans le script |
-| `culture_pop_fr.json` | Culture pop : films, séries, jeux vidéo, marques... (64 groupes) |
+## License
 
-Pour importer votre propre liste, déposez un fichier `.json` dans `Scriptable/Undercover/lists/` (app Fichiers) puis sélectionnez-la dans *Changer de liste de mots*. Pour publier une nouvelle liste officielle, ajoutez le fichier dans `lists/` et son nom dans `lists/index.json`.
-
-### 6. Journal des parties
-
-Chaque partie écrit un journal texte dans `Scriptable/Undercover/logs/` (app Fichiers > iCloud Drive > Scriptable > Undercover > logs, ou *Sur mon iPhone* sans iCloud) : liste et mots tirés, rôles, ordre de parole de chaque manche, éliminations, tentative de Mister White, résultat et points. Les parties abandonnées ou interrompues sont aussi consignées. L'écran *Historique des parties* permet de lister, ouvrir et effacer ces journaux.
+[MIT](LICENSE) © 2026 WolfGang-PRoxa
